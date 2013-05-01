@@ -74,7 +74,9 @@
 
     draw: function() {
       return this;
-    }
+    },
+
+    remove: function() {}
   });
 
 
@@ -101,6 +103,13 @@
       }
       else {
         return this.users[userId];
+      }
+    },
+
+    removeUser: function(userId) {
+      if (typeof this.users[userId] !== 'undefined') {
+        this.users[userId].remove();
+        delete this.users[userId];
       }
     }
   });
@@ -159,6 +168,10 @@
       }
 
       return this;
+    },
+
+    remove: function() {
+      this.shape.destroy();
     }
   });
 
@@ -210,7 +223,12 @@
         var ws = new WebSocket(opts.socketUrl);
         ws.onmessage = function(e) {
           var data = JSON.parse(e.data);
-          users.getUser(data.user).positionJoint(data.joint, data.x, data.y, data.z);
+          if (data.type === 'joint') {
+            users.getUser(data.user).positionJoint(data.joint, data.x, data.y, data.z);
+          }
+          else if (data.type === 'lostUser') {
+            users.removeUser(data.user);
+          }
         };
       });
     }
