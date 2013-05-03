@@ -22,6 +22,18 @@
   };
 
   var images = {};
+ 
+  /**
+   * Scale value from one range to another.
+   *
+   * This is needed because OpenNI sends us coordinates
+   * with the origin at the position of the Kinect controller.
+   * The HTML Canvas element puts the origin in the upper
+   * left hand corner (e.g. no negative coordinates.
+   */
+  function scaleCoordinate(val, oldMin, oldMax, newMin, newMax) {
+    return (val - oldMin) / (oldMax - oldMin) * (newMax - newMin) + newMin;
+  }
 
   function loadImages(sources, callback) {
     var loadedImages = 0;
@@ -48,13 +60,12 @@
       this.userId = opts.userId;
       this.joints = {};
       this.initGraphics(opts);
-      //this.stage.draw();
     },
 
     initGraphics: function(opts) {},
 
     positionJoint: function(name, x, y, z) {
-      console.debug("Positioning joint " + name + " at ( " + x + ", " + y + ", " + z + ") for user " + this.userId);
+      //console.debug("Positioning joint " + name + " at ( " + x + ", " + y + ", " + z + ") for user " + this.userId);
       // From the OpenNI docs:
       //
       // A joint orientation is described by its actual rotation and the 
@@ -68,8 +79,10 @@
           y: y,
           z: z
       };
-      
-      return this.draw();
+
+      this.draw();
+
+      return this;
     },
 
     draw: function() {
@@ -118,49 +131,75 @@
     initGraphics: function(opts) {
       this.layer = opts.layer;
       this.stage = opts.stage;
-      this.shape = new Kinetic.Polygon({
-        x: this.stage.getWidth() / 2,
-        y: this.stage.getHeight() / 2,
-        sides: 5,
-        radius: 400,
-        fillPatternImage: opts.fillPatternImage,
-        stroke: 'none',
-        strokeWidth: 4,
-        draggable: true
-      });
-      this.layer.add(this.shape);
+      this.fillPatternImage = opts.fillPatternImage
+    },
+
+    /**
+     * Scale a joint coordinate to the canvas coordinate
+     * system.
+     */
+    scale: function(point) {
+      // Assume joint x coordinates range from -1500 to 1500
+      // and y coordinates range from -1000 to 1000.
+      //
+      // This is based on a quick and dirty tracking of
+      // min/max values from a sample .oni file.  These values
+      // will certainly have to be adjusted, or better yet
+      var xMin= -1500;
+      var xMax = 1500;
+      var yMin = -1000;
+      var yMax = 1000;
+
+      return {
+        x: scaleCoordinate(point.x, xMin, xMax, 0, this.stage.getWidth()), 
+        y: scaleCoordinate(point.y, yMin, yMax, 0, this.stage.getHeight()) 
+      };
     },
 
     draw: function() {
+      var points;
       if (this.joints['SKEL_TORSO'] &&
           this.joints['SKEL_HEAD'] && this.joints['SKEL_RIGHT_HAND'] && 
           this.joints['SKEL_RIGHT_FOOT'] && this.joints['SKEL_LEFT_FOOT'] &&
           this.joints['SKEL_LEFT_HAND']) {
           // Argument to setPoints orders points clockwise from lower
           // left-hand corner
-          var points = [   
-            {
+          points = [   
+            this.scale({
               x: this.joints['SKEL_LEFT_FOOT'].x,
               y: this.joints['SKEL_LEFT_FOOT'].y
-            },
-            {
+            }),
+            this.scale({
               x: this.joints['SKEL_LEFT_HAND'].x,
               y: this.joints['SKEL_LEFT_HAND'].y
-            },
-            {
+            }),
+            this.scale({
               x: this.joints['SKEL_HEAD'].x,
               y: this.joints['SKEL_HEAD'].y
-            },
-            {
+            }),
+            this.scale({
               x: this.joints['SKEL_RIGHT_FOOT'].x,
               y: this.joints['SKEL_RIGHT_FOOT'].y
-            },
-            {
+            }),
+            this.scale({
               x: this.joints['SKEL_RIGHT_HAND'].x,
               y: this.joints['SKEL_RIGHT_HAND'].y
-            }
+            })
           ];
-          this.shape.setPoints(points);
+          if (typeof this.shape === "undefined") {
+            this.shape = new Kinetic.Polygon({
+              points: points,
+              sides: 5,
+              fillPatternImage: this.fillPatternImage,
+              stroke: 'none',
+              strokeWidth: 4,
+              draggable: true
+            });
+            this.layer.add(this.shape);
+          }
+          else {
+            this.shape.setPoints(points);
+          }
           // TODO: Scale the shape so that it gets bigger and smaller the closer
           // or further you move from the kinect controller
           //this.shape.setScale(this.joints['SKEL_HEAD'].z, this.joints['SKEL_HEAD'].z);
@@ -186,10 +225,8 @@
       this.fillPatternImages = opts.fillPatternImages;
       this.stage = new Kinetic.Stage({
           container: opts.container,
-          //width: window.width,
-          //height: window.height
-          width: 2000,
-          height: 1000
+          width: window.innerWidth,
+          height: window.innerHeight
         });
       
       this.layer = new Kinetic.Layer(); 
