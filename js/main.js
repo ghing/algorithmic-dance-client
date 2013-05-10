@@ -38,11 +38,12 @@
   function loadImages(sources, callback) {
     var loadedImages = 0;
     var numImages = 0;
+    var src;
     // get num of sources
-    for(var src in sources) {
+    for(src in sources) {
       numImages++;
     }
-    for(var src in sources) {
+    for(src in sources) {
       images[src] = new Image();
       images[src].onload = function() {
         if(++loadedImages >= numImages) {
@@ -54,8 +55,6 @@
   }
 
   var Skeleton = Class.extend({
-    jointNames: ['SKEL_LEFT_FINGERTIP', 'SKEL_LEFT_ANKLE', 'SKEL_RIGHT_ELBOW', 'SKEL_RIGHT_FOOT', 'SKEL_LEFT_ELBOW', 'SKEL_RIGHT_WRIST', 'SKEL_LEFT_HAND', 'SKEL_RIGHT_HIP', 'SKEL_LEFT_HIP', 'SKEL_LEFT_SHOULDER', 'SKEL_RIGHT_KNEE', 'SKEL_WAIST', 'SKEL_HEAD', 'SKEL_TORSO', 'SKEL_RIGHT_HAND', 'SKEL_LEFT_WRIST', 'SKEL_RIGHT_COLLAR', 'SKEL_RIGHT_ANKLE', 'SKEL_NECK', 'SKEL_RIGHT_FINGERTIP', 'SKEL_LEFT_KNEE', 'SKEL_LEFT_FOOT', 'SKEL_RIGHT_SHOULDER', 'SKEL_LEFT_COLLAR'],
-
     init: function(opts) {
       this.userId = opts.userId;
       this.joints = {};
@@ -64,6 +63,16 @@
 
     initGraphics: function(opts) {},
 
+    /**
+     * Joint names sent verom server are:
+     *
+     * SKEL_LEFT_FINGERTIP, SKEL_LEFT_ANKLE, SKEL_RIGHT_ELBOW, SKEL_RIGHT_FOOT,
+     * SKEL_LEFT_ELBOW, SKEL_RIGHT_WRIST, SKEL_LEFT_HAND, SKEL_RIGHT_HIP,
+     * SKEL_LEFT_HIP, SKEL_LEFT_SHOULDER, SKEL_RIGHT_KNEE, SKEL_WAIST, 
+     * SKEL_HEAD, SKEL_TORSO, SKEL_RIGHT_HAND, SKEL_LEFT_WRIST,
+     * SKEL_RIGHT_COLLAR, SKEL_RIGHT_ANKLE, SKEL_NECK, SKEL_RIGHT_FINGERTIP,
+     * SKEL_LEFT_KNEE, SKEL_LEFT_FOOT, SKEL_RIGHT_SHOULDER, SKEL_LEFT_COLLAR
+     */
     positionJoint: function(name, x, y, z) {
       //console.debug("Positioning joint " + name + " at ( " + x + ", " + y + ", " + z + ") for user " + this.userId);
       // From the OpenNI docs:
@@ -102,12 +111,12 @@
 
     initGraphics: function(opts) {},
 
-
     initUser: function(userId) {
       console.debug("Initializing user " + userId);
-      return this.users[userId] = new Skeleton({
+      this.users[userId] = new Skeleton({
         userId: userId
       });
+      return this.users[userId];
     },
 
     getUser: function(userId) {
@@ -131,7 +140,7 @@
     initGraphics: function(opts) {
       this.layer = opts.layer;
       this.stage = opts.stage;
-      this.fillPatternImage = opts.fillPatternImage
+      this.fillPatternImage = opts.fillPatternImage;
     },
 
     /**
@@ -158,33 +167,33 @@
 
     draw: function() {
       var points;
-      if (this.joints['SKEL_TORSO'] &&
-          this.joints['SKEL_HEAD'] && this.joints['SKEL_RIGHT_HAND'] && 
-          this.joints['SKEL_RIGHT_FOOT'] && this.joints['SKEL_LEFT_FOOT'] &&
-          this.joints['SKEL_LEFT_HAND']) {
+      if (this.joints.SKEL_TORSO &&
+          this.joints.SKEL_HEAD && this.joints.SKEL_RIGHT_HAND && 
+          this.joints.SKEL_RIGHT_FOOT && this.joints.SKEL_LEFT_FOOT &&
+          this.joints.SKEL_LEFT_HAND) {
           // Argument to setPoints orders points clockwise from lower
           // left-hand corner
           // TODO: Figure out why feet often seem reversed
           points = [   
             this.scale({
-              x: this.joints['SKEL_LEFT_FOOT'].x,
-              y: this.joints['SKEL_LEFT_FOOT'].y
+              x: this.joints.SKEL_LEFT_FOOT.x,
+              y: this.joints.SKEL_LEFT_FOOT.y
             }),
             this.scale({
-              x: this.joints['SKEL_LEFT_HAND'].x,
-              y: this.joints['SKEL_LEFT_HAND'].y
+              x: this.joints.SKEL_LEFT_HAND.x,
+              y: this.joints.SKEL_LEFT_HAND.y
             }),
             this.scale({
-              x: this.joints['SKEL_HEAD'].x,
-              y: this.joints['SKEL_HEAD'].y
+              x: this.joints.SKEL_HEAD.x,
+              y: this.joints.SKEL_HEAD.y
             }),
             this.scale({
-              x: this.joints['SKEL_RIGHT_FOOT'].x,
-              y: this.joints['SKEL_RIGHT_FOOT'].y
+              x: this.joints.SKEL_RIGHT_FOOT.x,
+              y: this.joints.SKEL_RIGHT_FOOT.y
             }),
             this.scale({
-              x: this.joints['SKEL_RIGHT_HAND'].x,
-              y: this.joints['SKEL_RIGHT_HAND'].y
+              x: this.joints.SKEL_RIGHT_HAND.x,
+              y: this.joints.SKEL_RIGHT_HAND.y
             })
           ];
           if (typeof this.shape === "undefined") {
@@ -235,12 +244,13 @@
     },
 
     initUser: function(userId) {
-      return this.users[userId] = new KineticSkeleton({
+      this.users[userId] = new KineticSkeleton({
         userId: userId,
         stage: this.stage,
         layer: this.layer,
         fillPatternImage: this.getRandomFillPatternImage() 
       });
+      return this.users[userId];
     }
   });
 
