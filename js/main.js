@@ -89,8 +89,6 @@
           z: z
       };
 
-      this.draw();
-
       return this;
     },
 
@@ -133,6 +131,14 @@
         this.users[userId].remove();
         delete this.users[userId];
       }
+    },
+
+    draw: function() {
+      var userId;
+      for (userId in this.users) {
+        this.users[userId].draw();
+      }
+      return this;
     }
   });
 
@@ -213,7 +219,6 @@
           // TODO: Scale the shape so that it gets bigger and smaller the closer
           // or further you move from the kinect controller
           //this.shape.setScale(this.joints['SKEL_HEAD'].z, this.joints['SKEL_HEAD'].z);
-          this.stage.draw();
       }
 
       return this;
@@ -251,6 +256,11 @@
         fillPatternImage: this.getRandomFillPatternImage() 
       });
       return this.users[userId];
+    },
+
+    draw: function() {
+      this._super();
+      this.stage.draw();
     }
   });
 
@@ -278,6 +288,10 @@
             users.removeUser(data.user);
           }
         };
+        (function animloop() {
+          requestAnimationFrame(animloop);
+          users.draw();
+        })();
       });
     }
   });
