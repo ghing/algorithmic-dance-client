@@ -143,6 +143,21 @@
   });
 
   var KineticSkeleton = Skeleton.extend({
+    // Assume joint x coordinates range from -1500 to 1500,
+    // y coordinates range from -1000 to 1000 and z coordinates
+    // range from 0 to 2600
+    //
+    // This is based on a quick and dirty tracking of
+    // min/max values from a sample .oni file.  These values
+    // will certainly have to be adjusted, or better yet,
+    // send updated values via the websocket
+    xMin: -1500,
+    xMax: 1500,
+    yMin: -1000,
+    yMax: 1000,
+    zMin: 0,
+    zMax: 2600,
+
     initGraphics: function(opts) {
       this.layer = opts.layer;
       this.stage = opts.stage;
@@ -154,25 +169,14 @@
      * system.
      */
     scale: function(point) {
-      // Assume joint x coordinates range from -1500 to 1500
-      // and y coordinates range from -1000 to 1000.
-      //
-      // This is based on a quick and dirty tracking of
-      // min/max values from a sample .oni file.  These values
-      // will certainly have to be adjusted, or better yet
-      var xMin= -1500;
-      var xMax = 1500;
-      var yMin = -1000;
-      var yMax = 1000;
-
       return {
-        x: scaleCoordinate(point.x, xMin, xMax, 0, this.stage.getWidth()), 
-        y: scaleCoordinate(point.y, yMin, yMax, this.stage.getHeight(), 0) 
+        x: scaleCoordinate(point.x, this.xMin, this.xMax, 0, this.stage.getWidth()), 
+        y: scaleCoordinate(point.y, this.yMin, this.yMax, this.stage.getHeight(), 0) 
       };
     },
 
     draw: function() {
-      var points;
+      var points, scale;
       if (this.joints.SKEL_TORSO &&
           this.joints.SKEL_HEAD && this.joints.SKEL_RIGHT_HAND && 
           this.joints.SKEL_RIGHT_FOOT && this.joints.SKEL_LEFT_FOOT &&
@@ -218,7 +222,9 @@
           }
           // TODO: Scale the shape so that it gets bigger and smaller the closer
           // or further you move from the kinect controller
-          //this.shape.setScale(this.joints['SKEL_HEAD'].z, this.joints['SKEL_HEAD'].z);
+          //scale = scaleCoordinate(this.joints.SKEL_TORSO.z,
+          //  this.zMin, this.zMax, 2, 1);
+          //this.shape.setScale(scale);
       }
 
       return this;
