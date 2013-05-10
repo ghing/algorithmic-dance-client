@@ -3,13 +3,13 @@
   // when using commonJS 
   var root = this;
 
-  // The top-level namespace. All public Backbone classes and modules will
+  // The top-level namespace. All public classes and modules will
   // be attached to this. Exported for both CommonJS and the browser.
-  var AMPKinect;
+  var Dance;
   if (typeof exports !== 'undefined') {
-    AMPKinect = exports;
+    Dance = exports;
   } else {
-    AMPKinect = root.AMPKinect = {};
+    Dance = root.Dance = {};
   }
 
   var sources = {
@@ -102,7 +102,7 @@
   });
 
 
-  var UserManager = Class.extend({
+  var Stage = Class.extend({
     init: function(opts) {
       console.debug("Initializing scene");
       this.users = {};
@@ -224,7 +224,7 @@
     }
   });
 
-  var KineticUserManager = UserManager.extend({
+  var KineticStage = Stage.extend({
     getRandomFillPatternImage: function() {
       var images = Object.keys(this.fillPatternImages);
       var image = images[Math.floor(Math.random()*images.length)];
@@ -254,7 +254,7 @@
     }
   });
 
-  var UserTrackingApp = AMPKinect.UserTrackingApp = Class.extend({
+  var UserTrackingApp = Dance.UserTrackingApp = Class.extend({
     init: function(opts) {
       opts = opts || {};
       if (typeof opts.socketUrl === "undefined") {
@@ -264,7 +264,7 @@
         opts.container = "container";
       }
       loadImages(sources, function(images) {
-        var users = new KineticUserManager({
+        var users = new KineticStage({
           container: opts.container, 
           fillPatternImages: images
         });
@@ -285,7 +285,7 @@
   var StupidTestApp = Class.extend({
     init: function(opts) {
       loadImages(sources, function(images) {
-        var users = new KineticUserManager({
+        var users = new KineticStage({
           container: 'container',
           fillPatternImages: images
         });
@@ -301,7 +301,7 @@
     }
   });
 
-  AMPKinect.init = function(opts) {
+  Dance.init = function(opts) {
     //var app = new StupidTestApp();
     var app = new UserTrackingApp(); 
   };
