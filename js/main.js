@@ -282,27 +282,7 @@
     }
   });
 
-  var StupidTestApp = Class.extend({
-    init: function(opts) {
-      loadImages(sources, function(images) {
-        var users = new KineticStage({
-          container: 'container',
-          fillPatternImages: images
-        });
-        var user = users.getUser(1);
-        user.positionJoint('SKEL_TORSO', users.stage.getWidth(), users.stage.getHeight());
-        user.positionJoint('SKEL_HEAD', 500, 300, 0);
-        user.positionJoint('SKEL_RIGHT_HAND', 1000, 500, 0);
-        user.positionJoint('SKEL_RIGHT_FOOT', 500, 900, 0);
-        user.positionJoint('SKEL_LEFT_HAND', 100, 500, 0);
-        user.positionJoint('SKEL_LEFT_FOOT', 100, 900, 0);
-        users.stage.draw();
-      });
-    }
-  });
-
   Dance.init = function(opts) {
-    //var app = new StupidTestApp();
     var app = new UserTrackingApp(); 
   };
 }).call(this);
