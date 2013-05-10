@@ -152,7 +152,7 @@
 
       return {
         x: scaleCoordinate(point.x, xMin, xMax, 0, this.stage.getWidth()), 
-        y: scaleCoordinate(point.y, yMin, yMax, 0, this.stage.getHeight()) 
+        y: scaleCoordinate(point.y, yMin, yMax, this.stage.getHeight(), 0) 
       };
     },
 
@@ -164,6 +164,7 @@
           this.joints['SKEL_LEFT_HAND']) {
           // Argument to setPoints orders points clockwise from lower
           // left-hand corner
+          // TODO: Figure out why feet often seem reversed
           points = [   
             this.scale({
               x: this.joints['SKEL_LEFT_FOOT'].x,
