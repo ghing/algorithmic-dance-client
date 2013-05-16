@@ -303,6 +303,6 @@
   });
 
   Dance.init = function(opts) {
-    var app = new UserTrackingApp(); 
+    var app = new UserTrackingApp(opts); 
   };
 }).call(this);
